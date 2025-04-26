@@ -1,34 +1,26 @@
 {
   "name": "blockauth-passanalysis",
   "version": "1.0.0",
-  "description": "Blockchain-based authentication and password analysis app",
-  "main": "index.js",
+  "description": "Decentralized Password Management with Blockchain Authentication",
+  "main": "server.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Apoorva-Santhosh/BlockAuth-PassAnalysis.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Apoorva-Santhosh/BlockAuth-PassAnalysis/issues"
-  },
-  "homepage": "https://github.com/Apoorva-Santhosh/BlockAuth-PassAnalysis#readme",
   "dependencies": {
-    "express": "^4.18.2",
-    "fast-levenshtein": "^3.0.0",
+    "express": "^4.21.2",
+    "fast-levenshtein": "^2.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.5.2"
+    "react-router-dom": "^6.23.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
     "vite": "^6.3.3"
   }
 }

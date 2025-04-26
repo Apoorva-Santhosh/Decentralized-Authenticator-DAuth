@@ -1,17 +1,21 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "type": "node",
-        "request": "launch",
-        "name": "Launch Express Server",
-        "program": "${workspaceFolder}/server.js",
-        "env": {
-          "NODE_ENV": "development"
-        },
-        "runtimeExecutable": "node",
-        "console": "integratedTerminal"
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Express Server",
+      "program": "${workspaceFolder}/server.js",
+      "env": {
+        "NODE_ENV": "development"
       }
-    ]
-  }
-  
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Vite Frontend",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
