@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import zxcvbn from 'zxcvbn';
 import levenshtein from 'fast-levenshtein';
-import weakPasswords from '../weak_passwords.json';
+import weakPasswords from '../weak_passwords.json';  // Make sure you have a file with weak passwords
 
 const analyzePassword = (password) => {
   const result = zxcvbn(password);
@@ -10,6 +10,7 @@ const analyzePassword = (password) => {
   let closestMatch = '';
   let minDistance = Infinity;
 
+  // Find the closest match to a weak password using Levenshtein distance
   for (const weakPass of weakPasswords) {
     const dist = levenshtein.get(password, weakPass);
     if (dist < minDistance) {
@@ -18,11 +19,12 @@ const analyzePassword = (password) => {
     }
   }
 
+  // Return the analysis result, ensuring that entropy is safe to use
   return {
     score: result.score,
     feedback: scoreText[result.score],
     crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
-    entropy: result.entropy.toFixed(2),
+    entropy: result.entropy ? result.entropy.toFixed(2) : 'N/A', // Check if entropy exists
     closestWeak: closestMatch,
     levenshteinDistance: minDistance
   };
