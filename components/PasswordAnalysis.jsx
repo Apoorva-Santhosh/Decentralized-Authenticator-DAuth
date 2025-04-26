@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import zxcvbn from 'zxcvbn';
 import levenshtein from 'fast-levenshtein';
-import weakPasswords from '../weak_passwords.json';  // Make sure you have a file with weak passwords
+import weakPasswords from '../weak_passwords.json';
 
 const analyzePassword = (password) => {
   const result = zxcvbn(password);
@@ -19,40 +19,39 @@ const analyzePassword = (password) => {
     }
   }
 
-  // Return the analysis result, ensuring that entropy is safe to use
+  // Return the analysis result (without entropy)
   return {
     score: result.score,
     feedback: scoreText[result.score],
     crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
-    entropy: result.entropy ? result.entropy.toFixed(2) : 'N/A', // Check if entropy exists
     closestWeak: closestMatch,
     levenshteinDistance: minDistance
   };
 };
 
-const PasswordAnalysis = () => {
-  const [password, setPassword] = useState('');
+const PasswordAnalysis = ({ password, modifiedPassword }) => {
   const [analysis, setAnalysis] = useState(null);
 
-  const handleAnalyze = () => {
-    setAnalysis(analyzePassword(password));
-  };
+  // Analyze the entered password
+  useEffect(() => {
+    if (password) {
+      setAnalysis(analyzePassword(password));  // Analyze original password
+    }
+  }, [password]);
+
+  // Analyze the modified password
+  useEffect(() => {
+    if (modifiedPassword) {
+      setAnalysis(analyzePassword(modifiedPassword));  // Analyze modified password
+    }
+  }, [modifiedPassword]);
 
   return (
     <div>
-      <h3>Analyze Password</h3>
-      <input
-        type="password"
-        placeholder="Enter password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button onClick={handleAnalyze}>Analyze</button>
-
+      <h3>Password Analysis</h3>
       {analysis && (
         <div>
           <p><strong>Strength:</strong> {analysis.feedback}</p>
-          <p><strong>Entropy:</strong> {analysis.entropy}</p>
           <p><strong>Estimated Crack Time:</strong> {analysis.crackTime}</p>
           <p><strong>Closest Weak Password:</strong> {analysis.closestWeak}</p>
           <p><strong>Levenshtein Distance:</strong> {analysis.levenshteinDistance}</p>
