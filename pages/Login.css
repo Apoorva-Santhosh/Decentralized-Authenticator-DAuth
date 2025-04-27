@@ -1,0 +1,47 @@
+/* Login.css */
+
+/* Container for the login page */
+.login-container {
+  background: linear-gradient(135deg, #d9f3ff, #e0f7fa); /* pastel gradient */
+  min-height: 100vh;
+  padding: 0 20px; /* Add padding to the left and right */
+}
+
+/* Form styling */
+.login-form {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;  /* Limit form width */
+  margin: 0 auto;  /* Center the form */
+  text-align: center;
+}
+
+/* Add padding to inputs and buttons for better spacing */
+.login-form input {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Styling for buttons */
+.login-form button {
+  width: 100%;
+  padding: 1rem;
+  background-color: #003366; /* Dark blue for buttons */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+  background-color: #00bfff; /* Light blue on hover */
+}

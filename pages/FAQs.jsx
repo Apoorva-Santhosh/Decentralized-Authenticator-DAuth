@@ -22,7 +22,7 @@ export default function FAQs() {
     },
     {
       question: "Are the chances of my account getting compromised reduced now?",
-      answer: "Yes. With password strength checks, modification tools, and blockchain-based storage, your account is significantly better protected against brute-force attacks, data leaks, and weak password reuse."
+      answer: "Yes. With password strength checks, modification tools, and bockchain-based storage, your account is significantly better protected against brute-force attacks, data leaks, and weak password reuse."
     },
     {
       question: "What does the strength score mean?",
@@ -46,23 +46,17 @@ export default function FAQs() {
     }
   ];
 
-  return (
+    return (
     <Layout>
-      {/* FAQ Content (only unique content remains) */}
-      <div className="container mx-auto py-8 max-w-4xl px-4">
-        <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-purple-500 pb-2 mb-8 text-center">
-          Frequently Asked Questions
-        </h2>
-        
-        <div className="space-y-6">
-          {faqs.map((faq, index) => (
-            <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-purple-600 mb-2">{faq.question}</h3>
-              <p className="text-gray-700">{faq.answer}</p>
-            </div>
-          ))}
-        </div>
+      <div className="faq-container">
+        <h2>Frequently Asked Questions</h2>
+        {faqs.map((faqs, idx) => (
+          <div key={idx} className="faq-item">
+            <h3>{faqs.question}</h3>
+            <p>{faqs.answer}</p>
+          </div>
+        ))}
       </div>
     </Layout>
   );
-}
+};

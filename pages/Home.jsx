@@ -1,10 +1,13 @@
 import React from 'react';
+import '../pages/Home.css'; // Correct import
 
 const Home = () => {
   return (
-    <div>
-      <h1>Welcome to the Blockchain Auth App</h1>
-      <p>Register or Login to continue.</p>
+    <div className="home-container">
+      <div className="content">
+        <h1>Welcome to Our Website</h1>
+        <p>Your journey begins here.</p>
+      </div>
     </div>
   );
 };

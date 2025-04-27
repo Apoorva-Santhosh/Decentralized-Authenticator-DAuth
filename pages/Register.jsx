@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './Register.css';
 import { modifyPassword } from '../utils/ModifyPassword.mjs';
 import zxcvbn from 'zxcvbn';
 import levenshtein from 'fast-levenshtein';

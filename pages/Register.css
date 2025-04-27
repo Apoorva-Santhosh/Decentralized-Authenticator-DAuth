@@ -1,0 +1,59 @@
+/* Register.css */
+
+/* Set the light blue pastel background */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #d9f3ff, #e0f7fa); /* pastel gradient */
+  }
+  
+  /* Container for centering the form */
+  .register-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    min-height: 100vh;       /* Full viewport height */
+    padding: 20px;
+  }
+  
+  /* Styling the form */
+  .register-form {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;  /* Maximum width for the form */
+  }
+  
+  .register-form h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .register-form input {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .register-form button {
+    width: 100%;
+    padding: 1rem;
+    background-color: #003366; /* Dark blue for buttons */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .register-form button:hover {
+    background-color: #00bfff; /* Light blue on hover */
+  }
+  
