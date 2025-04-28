@@ -1,43 +1,59 @@
 /* Login.css */
 
-/* Container for the login page */
+/* Full page container */
 .login-container {
-  background: linear-gradient(135deg, #d9f3ff, #e0f7fa); /* pastel gradient */
-  min-height: 100vh;
+  min-height: 100vh; /* Ensures the container takes the full height of the viewport */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url('../assets/background.jpg') no-repeat center center;
+  background-size: cover; /* Makes sure the background image covers the entire container */
+  background-position: center center; /* Keeps it centered */
 }
 
-/* Form styling */
-.login-form {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
+
+/* Blue box */
+.login-box {
+  background-color: #7db4eb; /* Medium blue */
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 400px;  /* Limit form width */
-  margin: 10 auto;  /* Center the form */
+  max-width: 400px;
   text-align: center;
+  margin-top: -150px;
 }
 
-/* Add padding to inputs and buttons for better spacing */
-.login-form input {
-  width: 100%;
-  margin: 0.5rem 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+/* Heading */
+.login-box h2 {
+  margin-bottom: 1rem;
+  color: black;
+}
+
+/* Input fields */
+.login-box input {
+  width: 80%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 8px;
   font-size: 1rem;
+  margin-left: center;
 }
 
-/* Styling for buttons */
-.login-form button {
-  width: 100%;
-  background-color: #003366; /* Dark blue for buttons */
+/* Button styling */
+.login-box button {
+  width: 87%;
+  padding: 0.8rem;
+  background-color: #003366; /* Darker blue */
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.login-form button:hover {
-  background-color: #00bfff; /* Light blue on hover */
+.login-box button:hover {
+  background-color: #0059b3; /* Slightly lighter on hover */
 }

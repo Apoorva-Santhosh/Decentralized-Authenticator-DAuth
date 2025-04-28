@@ -52,55 +52,54 @@ const Register = () => {
   const handleCopy = () => {
     navigator.clipboard.writeText(modifiedPassword);
     setCopied(true);
-    setTimeout(() => setCopied(false), 1500); // Hide "Copied!" after 1.5s
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Register</h2>
+    <div className="register-container">
+      <div className="register-box">
+        <h2>Register</h2>
 
-      <input
-        type="password"
-        placeholder="Enter Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ padding: '8px', width: '300px' }}
-      />
+        <input
+          type="password"
+          placeholder="Enter Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: '8px', width: '300px' }}
+        />
 
-      {/* Analysis for Original Password */}
-      {analysisOriginal && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Original Password Analysis</h3>
-          <p><strong>Strength:</strong> {analysisOriginal.feedback}</p>
-          <p><strong>Estimated Crack Time:</strong> {analysisOriginal.crackTime}</p>
-          <p><strong>Closest Weak Password:</strong> {analysisOriginal.closestWeak}</p>
-          <p><strong>Levenshtein Distance:</strong> {analysisOriginal.levenshteinDistance}</p>
-        </div>
-      )}
-
-      {/* Modified Password and its Analysis */}
-      {modifiedPassword && (
-        <div style={{ marginTop: '30px' }}>
-          <h3>Suggested Modified Password</h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <p style={{ fontWeight: 'bold', fontSize: '18px' }}>{modifiedPassword}</p>
-            <button onClick={handleCopy} style={{ padding: '5px 10px' }}>
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
+        {analysisOriginal && (
+          <div style={{ marginTop: '20px' }}>
+            <h3>Original Password Analysis</h3>
+            <p><strong>Strength:</strong> {analysisOriginal.feedback}</p>
+            <p><strong>Estimated Crack Time:</strong> {analysisOriginal.crackTime}</p>
+            <p><strong>Closest Weak Password:</strong> {analysisOriginal.closestWeak}</p>
+            <p><strong>Levenshtein Distance:</strong> {analysisOriginal.levenshteinDistance}</p>
           </div>
+        )}
 
-          {/* Analysis of Modified Password */}
-          {analysisModified && (
-            <div style={{ marginTop: '15px' }}>
-              <h4>Modified Password Analysis</h4>
-              <p><strong>Strength:</strong> {analysisModified.feedback}</p>
-              <p><strong>Estimated Crack Time:</strong> {analysisModified.crackTime}</p>
-              <p><strong>Closest Weak Password:</strong> {analysisModified.closestWeak}</p>
-              <p><strong>Levenshtein Distance:</strong> {analysisModified.levenshteinDistance}</p>
+        {modifiedPassword && (
+          <div style={{ marginTop: '30px' }}>
+            <h3>Suggested Modified Password</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '18px', wordBreak: 'break-word' }}>{modifiedPassword}</p>
+              <button onClick={handleCopy} style={{ padding: '5px 10px' }}>
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
             </div>
-          )}
-        </div>
-      )}
+
+            {analysisModified && (
+              <div style={{ marginTop: '15px' }}>
+                <h4>Modified Password Analysis</h4>
+                <p><strong>Strength:</strong> {analysisModified.feedback}</p>
+                <p><strong>Estimated Crack Time:</strong> {analysisModified.crackTime}</p>
+                <p><strong>Closest Weak Password:</strong> {analysisModified.closestWeak}</p>
+                <p><strong>Levenshtein Distance:</strong> {analysisModified.levenshteinDistance}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

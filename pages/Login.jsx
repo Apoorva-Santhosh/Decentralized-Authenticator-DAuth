@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import './Login.css';
+import '../pages/Login.css';
+import backgroundImage from '../assets/background.jpg'; // you imported this, good!
 
 const Login = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e) => {
@@ -10,17 +12,27 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
+    <div
+    className="login-container"
+    style={{
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}
+    >
+      <div className="login-box">
+        <h2>Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="Enter Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </div>
     </div>
   );
 };

@@ -1,16 +1,13 @@
 import React from "react";
 import Layout from "../components/Layout";
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
+import './FAQs.css';  // Make sure the path is correct
 
 export default function FAQs() {
   const faqs = [
     {
       question: "What is the purpose of this application?",
-      answer: "This app helps users analyze and improve their passwords using advanced techniques like entropy analysis, dictionary attack detection, and smart password modifications. It then stores only hashed passwords securely on a blockchain."
-    },
-    {
-      question: "How is this different from a regular password manager?",
-      answer: "Unlike traditional managers that rely on centralized servers, this app uses blockchain to store password hashes in a decentralized, tamper-proof way, reducing the risk of mass data breaches."
+      answer: "This app helps users analyze and improve their passwords using advanced techniques like dictionary attack detection, and smart password modifications. It then stores only hashed passwords securely on a blockchain."
     },
     {
       question: "How does blockchain increase security?",
@@ -44,19 +41,20 @@ export default function FAQs() {
       question: "What if I use the same password on multiple websites?",
       answer: "That's risky. Even if your password is strong, using it across services can expose you in case of data breaches elsewhere. This app encourages creating unique, strong passwords for each site to improve security."
     }
-  ];
+    ];
 
-    return (
+  return (
     <Layout>
       <div className="faq-container">
-        <h2>Frequently Asked Questions</h2>
-        {faqs.map((faqs, idx) => (
-          <div key={idx} className="faq-item">
-            <h3>{faqs.question}</h3>
-            <p>{faqs.answer}</p>
-          </div>
-        ))}
-      </div>
+  <h2>Frequently Asked Questions</h2>
+  {faqs.map((faq, idx) => (
+    <div key={idx} className="faq-item">
+      <h3>{faq.question}</h3>
+      <p>{faq.answer}</p>
+    </div>
+  ))}
+</div>
+
     </Layout>
   );
-};
+}
