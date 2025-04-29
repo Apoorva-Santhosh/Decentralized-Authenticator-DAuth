@@ -1,5 +1,4 @@
 import React from "react";
-import Layout from "../components/Layout";
 import { Link } from 'react-router-dom';
 import './FAQs.css';  // Make sure the path is correct
 
@@ -44,7 +43,7 @@ export default function FAQs() {
     ];
 
   return (
-    <Layout>
+    
       <div className="faq-container">
   <h2>Frequently Asked Questions</h2>
   {faqs.map((faq, idx) => (
@@ -55,6 +54,6 @@ export default function FAQs() {
   ))}
 </div>
 
-    </Layout>
+   
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Register.css';
 import { modifyPassword } from '../utils/ModifyPassword.mjs';
+import { hashPassword } from '../utils/hashUtils.js'; // Import the hashing function
 import zxcvbn from 'zxcvbn';
 import levenshtein from 'fast-levenshtein';
 import weakPasswords from '../weak_passwords.json';
@@ -35,6 +36,7 @@ const Register = () => {
   const [analysisOriginal, setAnalysisOriginal] = useState(null);
   const [analysisModified, setAnalysisModified] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [hashedPassword, setHashedPassword] = useState(''); // Hash after clicking Register
 
   useEffect(() => {
     if (password) {
@@ -53,6 +55,16 @@ const Register = () => {
     navigator.clipboard.writeText(modifiedPassword);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleRegister = () => {
+    const finalPassword = modifiedPassword || password;
+    const hashed = hashPassword(finalPassword);
+    setHashedPassword(hashed);
+
+    
+    console.log('Password ready to send:', hashed);
+    alert('Password hashed and ready! (Check console)');
   };
 
   return (
@@ -97,6 +109,22 @@ const Register = () => {
                 <p><strong>Levenshtein Distance:</strong> {analysisModified.levenshteinDistance}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Register Button */}
+        <button 
+          onClick={handleRegister} 
+          style={{ marginTop: '30px', padding: '10px 20px' }}
+        >
+          Register
+        </button>
+
+        {/* Show hashed password only after clicking Register */}
+        {hashedPassword && (
+          <div style={{ marginTop: '30px', wordBreak: 'break-word' }}>
+            <h3>Hashed Password (Ready for Smart Contract)</h3>
+            <p>{hashedPassword}</p>
           </div>
         )}
       </div>
