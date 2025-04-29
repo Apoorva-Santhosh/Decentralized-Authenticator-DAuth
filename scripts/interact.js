@@ -1,0 +1,41 @@
+const { ethers } = require("hardhat");
+
+async function interact() {
+  const [user] = await ethers.getSigners();
+  console.log("Interacting with contract using account:", user.address);
+
+  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; 
+
+  const authManager = await ethers.getContractAt("AuthManager", contractAddress);
+
+  // Check if user is already registered
+  const isRegistered = await authManager.isRegistered(user.address);
+  console.log("Is Registered:", isRegistered);
+
+  if (!isRegistered) {
+    
+    const password = "my_secure_password"; 
+    const passwordHash = ethers.keccak256(ethers.toUtf8Bytes(password));
+    console.log("Password Hash:", passwordHash);
+
+    const tx = await authManager.register(passwordHash);
+    await tx.wait();
+    console.log("User registered successfully!");
+  } else {
+    console.log("User already registered.");
+  }
+
+ 
+  const passwordToLogin = "my_secure_password"; 
+  const passwordHashToLogin = ethers.keccak256(ethers.toUtf8Bytes(passwordToLogin));
+  
+  const loginSuccess = await authManager.login(passwordHashToLogin);
+  console.log("Login Success?", loginSuccess);
+}
+
+interact()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
