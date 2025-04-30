@@ -1,21 +1,16 @@
-/* Full page background */
-/* Full page background */
 .register-container {
-  min-height: 100vh; /* Ensures container takes up the full height of the viewport */
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background: url('../assets/background.jpg') no-repeat center center; /* You can replace this with the wallpaper image */
-  background-size: cover; /* Ensures background image covers entire screen */
-  background-position: center; /* Keeps the background centered */
+  background: url('../assets/background.jpg') no-repeat center center;
+  background-size: cover;
   padding: 20px;
   padding-top: 50px;
 }
 
-
-/* White Box */
 .register-box {
-  background-color: #7db4eb; /* Medium blue */
+  background-color: #7db4eb;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
@@ -25,40 +20,59 @@
   margin-top: 100px;
 }
 
-/* Form heading */
-.register-box h2 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: black;
-}
-
-/* Input field */
 .register-box input {
   width: 100%;
-  padding: 0.8rem;
-  margin: 0.5rem 0;
+  padding: 0.8rem 1.2rem;
+  margin: 0.5rem 0; /* Adjusted margin to reduce space */
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 1rem;
+  height: 30px;
 }
 
-/* Button inside the box */
+.register-box button,
+.connect-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
+  margin-top: 1rem; /* Reduced margin to bring buttons closer */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  height: 40px;
+}
+
 .register-box button {
   background-color: #003366;
   color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .register-box button:hover {
-  background-color: #0059b3;
+  background-color: #035b21;
 }
 
-/* Headings inside analysis */
-.register-box h3, .register-box h4 {
-  margin-top: 1.5rem;
-  color: #003366;
+.connect-btn:hover {
+  background-color: #af4e09;
+}
+
+/* Styling for the modified password text */
+.modified-password {
+  color: #b13d1a; /* Dark blue color for the modified password */
+  font-weight: bold;
+  font-size: 18px;
+  word-break: break-word;
+}
+
+/* Optional: Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .register-box {
+    padding: 1.5rem;
+  }
+
+  .register-box button,
+  .connect-btn {
+    max-width: 90%;
+  }
 }

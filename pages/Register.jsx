@@ -106,17 +106,23 @@ const Register = () => {
       <div className="register-box">
         <h2>Register</h2>
 
-        {!account && <button onClick={connectWallet}>Connect Wallet</button>}
+        {/* Wallet connection and password input */}
+        {!account && (
+          <div className="input-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <input
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ padding: '8px', width: '300px' }}
+            />
+            <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
+          </div>
+        )}
+
         {account && <p>Connected: {account}</p>}
 
-        <input
-          type="password"
-          placeholder="Enter Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ padding: '8px', width: '300px' }}
-        />
-
+        {/* Original password analysis */}
         {analysisOriginal && (
           <div style={{ marginTop: '20px' }}>
             <h3>Original Password Analysis</h3>
@@ -127,12 +133,15 @@ const Register = () => {
           </div>
         )}
 
+        {/* Modified password and its analysis */}
         {modifiedPassword && (
           <div style={{ marginTop: '30px' }}>
             <h3>Suggested Modified Password</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <p style={{ fontWeight: 'bold', fontSize: '18px', wordBreak: 'break-word' }}>{modifiedPassword}</p>
-              <button onClick={handleCopy} style={{ padding: '5px 10px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '18px', wordBreak: 'break-word' }}>
+                {modifiedPassword}
+              </p>
+              <button onClick={handleCopy} style={{ padding: '5px 10px', marginTop: '10px' }}>
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
