@@ -1,34 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Register.css';
 import { modifyPassword } from '../utils/ModifyPassword.mjs';
-import { hashPassword } from '../utils/hashUtils.js'; // Import the hashing function
+import { hashPassword } from '../utils/hashUtils.js';
 import zxcvbn from 'zxcvbn';
 import levenshtein from 'fast-levenshtein';
 import weakPasswords from '../weak_passwords.json';
+import { ethers } from 'ethers';
+import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
 
-const analyzePassword = (password) => {
-  const result = zxcvbn(password);
-  const scoreText = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
-
-  let closestMatch = '';
-  let minDistance = Infinity;
-
-  for (const weakPass of weakPasswords) {
-    const dist = levenshtein.get(password, weakPass);
-    if (dist < minDistance) {
-      minDistance = dist;
-      closestMatch = weakPass;
-    }
-  }
-
-  return {
-    score: result.score,
-    feedback: scoreText[result.score],
-    crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
-    closestWeak: closestMatch,
-    levenshteinDistance: minDistance
-  };
-};
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -36,7 +16,32 @@ const Register = () => {
   const [analysisOriginal, setAnalysisOriginal] = useState(null);
   const [analysisModified, setAnalysisModified] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [hashedPassword, setHashedPassword] = useState(''); // Hash after clicking Register
+  const [hashedPassword, setHashedPassword] = useState('');
+  const [account, setAccount] = useState('');
+
+  const analyzePassword = (password) => {
+    const result = zxcvbn(password);
+    const scoreText = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+
+    let closestMatch = '';
+    let minDistance = Infinity;
+
+    for (const weakPass of weakPasswords) {
+      const dist = levenshtein.get(password, weakPass);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestMatch = weakPass;
+      }
+    }
+
+    return {
+      score: result.score,
+      feedback: scoreText[result.score],
+      crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
+      closestWeak: closestMatch,
+      levenshteinDistance: minDistance
+    };
+  };
 
   useEffect(() => {
     if (password) {
@@ -51,26 +56,58 @@ const Register = () => {
     }
   }, [password]);
 
+  const connectWallet = async () => {
+    if (!window.ethereum) return alert("Please install MetaMask.");
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    setAccount(accounts[0]);
+  };
+
   const handleCopy = () => {
     navigator.clipboard.writeText(modifiedPassword);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handleRegister = () => {
-    const finalPassword = modifiedPassword || password;
-    const hashed = hashPassword(finalPassword);
-    setHashedPassword(hashed);
+  const handleRegister = async () => {
+    try {
+      if (!window.ethereum) {
+        alert('Please install MetaMask to register.');
+        return;
+      }
 
-    
-    console.log('Password ready to send:', hashed);
-    alert('Password hashed and ready! (Check console)');
+      const finalPassword = modifiedPassword || password;
+      const hashed = hashPassword(finalPassword);
+      setHashedPassword(hashed);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+
+      const address = await signer.getAddress();
+      const isRegistered = await contract.isRegistered(address);
+
+      if (isRegistered) {
+        alert('Already registered with this account.');
+        return;
+      }
+
+      const tx = await contract.register(hashed);
+      await tx.wait();
+
+      alert('User registered successfully!');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('An error occurred during registration.');
+    }
   };
 
   return (
     <div className="register-container">
       <div className="register-box">
         <h2>Register</h2>
+
+        {!account && <button onClick={connectWallet}>Connect Wallet</button>}
+        {account && <p>Connected: {account}</p>}
 
         <input
           type="password"
@@ -112,18 +149,13 @@ const Register = () => {
           </div>
         )}
 
-        {/* Register Button */}
-        <button 
-          onClick={handleRegister} 
-          style={{ marginTop: '30px', padding: '10px 20px' }}
-        >
+        <button onClick={handleRegister} style={{ marginTop: '30px', padding: '10px 20px' }}>
           Register
         </button>
 
-        {/* Show hashed password only after clicking Register */}
         {hashedPassword && (
           <div style={{ marginTop: '30px', wordBreak: 'break-word' }}>
-            <h3>Hashed Password (Ready for Smart Contract)</h3>
+            <h3>Hashed Password</h3>
             <p>{hashedPassword}</p>
           </div>
         )}

@@ -1,28 +1,63 @@
 import React, { useState } from 'react';
 import '../pages/Login.css';
-import backgroundImage from '../assets/background.jpg'; // you imported this, good!
+import backgroundImage from '../assets/background.jpg';
+import { hashPassword } from '../utils/hashUtils.js';
+import { ethers } from 'ethers';
+import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
+
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [account, setAccount] = useState('');
 
-  const handleSubmit = (e) => {
+  const connectWallet = async () => {
+    if (!window.ethereum) return alert("Please install MetaMask.");
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    setAccount(accounts[0]);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Login logic not implemented yet');
+
+    try {
+      if (!window.ethereum) {
+        alert('Please install MetaMask.');
+        return;
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+
+      const hashed = hashPassword(password);
+      const success = await contract.login(hashed);
+
+      if (success) {
+        alert('Login successful!');
+      } else {
+        alert('Login failed: Incorrect password.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login.');
+    }
   };
 
   return (
     <div
-    className="login-container"
-    style={{
-      backgroundImage: `url(${backgroundImage})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }}
+      className="login-container"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
       <div className="login-box">
         <h2>Login</h2>
+        {!account && <button onClick={connectWallet}>Connect Wallet</button>}
+        {account && <p>Connected: {account}</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="password"
