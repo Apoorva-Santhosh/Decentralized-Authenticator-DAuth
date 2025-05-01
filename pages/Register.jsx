@@ -8,7 +8,7 @@ import weakPasswords from '../weak_passwords.json';
 import { ethers } from 'ethers';
 import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -16,9 +16,10 @@ const Register = () => {
   const [analysisOriginal, setAnalysisOriginal] = useState(null);
   const [analysisModified, setAnalysisModified] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [hashedPassword, setHashedPassword] = useState('');
   const [account, setAccount] = useState('');
+  const [hashedPassword, setHashedPassword] = useState(''); 
 
+  // Analyze passwords
   const analyzePassword = (password) => {
     const result = zxcvbn(password);
     const scoreText = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
@@ -57,9 +58,14 @@ const Register = () => {
   }, [password]);
 
   const connectWallet = async () => {
-    if (!window.ethereum) return alert("Please install MetaMask.");
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    setAccount(accounts[0]);
+    try {
+      if (!window.ethereum) return alert("Please install MetaMask.");
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      setAccount(accounts[0]);
+    } catch (err) {
+      console.error('Wallet connection error:', err);
+      alert('Failed to connect wallet.');
+    }
   };
 
   const handleCopy = () => {
@@ -68,59 +74,60 @@ const Register = () => {
     setTimeout(() => setCopied(false), 1500);
   };
 
+  
   const handleRegister = async () => {
     try {
       if (!window.ethereum) {
         alert('Please install MetaMask to register.');
         return;
       }
+      console.log("Password during registration:", password);
 
       const finalPassword = modifiedPassword || password;
       const hashed = hashPassword(finalPassword);
+      console.log("Hashed password during registration:", hashed); // Debugging line
       setHashedPassword(hashed);
-
+  
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
-
-      const address = await signer.getAddress();
-      const isRegistered = await contract.isRegistered(address);
-
+  
+      const isRegistered = await contract.isRegistered(account);
       if (isRegistered) {
-        alert('Already registered with this account.');
+        alert('User is already registered.');
         return;
       }
-
+  
       const tx = await contract.register(hashed);
       await tx.wait();
-
       alert('User registered successfully!');
     } catch (error) {
       console.error('Registration failed:', error);
       alert('An error occurred during registration.');
     }
   };
+  
 
   return (
     <div className="register-container">
       <div className="register-box">
         <h2>Register</h2>
 
-        {/* Wallet connection and password input */}
-        {!account && (
-          <div className="input-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-            <input
-              type="password"
-              placeholder="Enter Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ padding: '8px', width: '300px' }}
-            />
+        {/* Wallet + Password input */}
+        <div className="input-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <input
+            type="password"
+            placeholder="Enter Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: '8px', width: '300px' }}
+          />
+          {!account ? (
             <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
-          </div>
-        )}
-
-        {account && <p>Connected: {account}</p>}
+          ) : (
+            <p style={{ fontWeight: 'bold' }}>Connected: {account}</p>
+          )}
+        </div>
 
         {/* Original password analysis */}
         {analysisOriginal && (
@@ -161,13 +168,6 @@ const Register = () => {
         <button onClick={handleRegister} style={{ marginTop: '30px', padding: '10px 20px' }}>
           Register
         </button>
-
-        {hashedPassword && (
-          <div style={{ marginTop: '30px', wordBreak: 'break-word' }}>
-            <h3>Hashed Password</h3>
-            <p>{hashedPassword}</p>
-          </div>
-        )}
       </div>
     </div>
   );

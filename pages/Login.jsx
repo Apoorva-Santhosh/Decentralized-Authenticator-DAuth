@@ -5,7 +5,7 @@ import { hashPassword } from '../utils/hashUtils.js';
 import { ethers } from 'ethers';
 import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 const Login = () => {
   const [password, setPassword] = useState('');
@@ -19,20 +19,21 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       if (!window.ethereum) {
         alert('Please install MetaMask.');
         return;
       }
-
+  
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+      console.log("Password during login:", password);
 
       const hashed = hashPassword(password);
+      console.log("Hashed password during login:", hashed); // Debugging line
+  
       const success = await contract.login(hashed);
-
       if (success) {
         alert('Login successful!');
       } else {

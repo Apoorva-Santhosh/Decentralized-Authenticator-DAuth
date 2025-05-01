@@ -1,12 +1,14 @@
+const hre = require("hardhat");
+
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  const [deployer] = await hre.ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const AuthManager = await ethers.getContractFactory("AuthManager");
+  const AuthManager = await hre.ethers.getContractFactory("AuthManager");
   const authManager = await AuthManager.deploy();
 
-  await authManager.waitForDeployment(); 
-  console.log("AuthManager deployed to:", await authManager.getAddress());
+  await authManager.deployed(); 
+  console.log("AuthManager deployed to:", authManager.address);
 }
 
 main()
