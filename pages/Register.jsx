@@ -8,7 +8,7 @@ import weakPasswords from '../weak_passwords.json';
 import { ethers } from 'ethers';
 import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
 
-const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -83,7 +83,7 @@ const Register = () => {
       }
       console.log("Password during registration:", password);
 
-      const finalPassword = modifiedPassword || password;
+      const finalPassword = password.trim();
       const hashed = hashPassword(finalPassword);
       console.log("Hashed password during registration:", hashed); // Debugging line
       setHashedPassword(hashed);
