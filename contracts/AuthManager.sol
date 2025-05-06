@@ -10,8 +10,7 @@ contract AuthManager {
     mapping(address => User) private users;
 
     event UserRegistered(address indexed user);
-    event LoginSuccessful(address indexed user);
-    event LoginFailed(address indexed user);
+    event LoginAttempt(address indexed user, bool success); // Unified login event for ledger
 
     // Register a new user
     function register(bytes32 _passwordHash) external {
@@ -26,12 +25,11 @@ contract AuthManager {
     }
 
     // Login: Verify user's password
-    function login(bytes32 _passwordHash) external view returns (bool) {
-        if (users[msg.sender].exists && users[msg.sender].passwordHash == _passwordHash) {
-            return true;
-        } else {
-            return false;
-        }
+    function login(bytes32 _passwordHash) external returns (bool) {
+        bool success = users[msg.sender].exists && users[msg.sender].passwordHash == _passwordHash;
+
+        emit LoginAttempt(msg.sender, success); // Record every login attempt on-chain
+        return success;
     }
 
     // Check if an address is already registered
