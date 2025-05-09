@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom';
-import './FAQs.css';  // Make sure the path is correct
+import './FAQs.css';  
 
 export default function FAQs() {
   const faqs = [

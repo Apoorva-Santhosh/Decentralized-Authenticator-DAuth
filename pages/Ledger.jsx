@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
+import '../pages/Ledger.css'; 
 
 const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
@@ -39,31 +40,27 @@ const Ledger = () => {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2 style={{ marginBottom: "20px" }}>Login Ledger</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <div className="ledger-container">
+      <h2 className="ledger-heading">Login Ledger</h2>
+      <table className="ledger-table">
         <thead>
-          <tr style={{ backgroundColor: "#f2f2f2" }}>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>User</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Success</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Timestamp</th>
-            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Tx</th>
+          <tr>
+            <th>User</th>
+            <th>Success</th>
+            <th>Timestamp</th>
+            <th>Tx</th>
           </tr>
         </thead>
         <tbody>
           {events.map((e, i) => (
             <tr key={i}>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{e.user}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px", color: e.success ? "green" : "red" }}>
+              <td>{e.user}</td>
+              <td className={e.success ? 'success' : 'fail'}>
                 {e.success ? "Success" : "Fail"}
               </td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>{e.timestamp}</td>
-              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                <a
-                  href={`https://sepolia.etherscan.io/tx/${e.txHash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+              <td>{e.timestamp}</td>
+              <td>
+                <a href={`https://sepolia.etherscan.io/tx/${e.txHash}`} target="_blank" rel="noreferrer">
                   View
                 </a>
               </td>
