@@ -17,35 +17,64 @@ const Login = () => {
     setAccount(accounts[0]);
   };
 
+  
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (!window.ethereum) {
-        alert('Please install MetaMask.');
-        return;
-      }
+  e.preventDefault();
+  console.log("Login button clicked");
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
-
-      const finalPassword = password.trim();
-      console.log("Password during login (trimmed):", finalPassword);
-
-      const hashed = hashPassword(finalPassword);
-      console.log("Hashed password during login:", hashed); // Debugging line
-
-      const success = await contract.login(hashed);
-      if (success) {
-        alert('Login successful!');
-      } else {
-        alert('Login failed: Incorrect password.');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login.');
+  try {
+    if (!window.ethereum) {
+      alert('Please install MetaMask.');
+      return;
     }
-  };
+
+    if (!account) {
+      alert('Please connect your wallet first.');
+      return;
+    }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const signerAddress = await signer.getAddress();
+
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+
+    const finalPassword = password.trim();
+    const hashed = hashPassword(finalPassword);
+    console.log("Hashed password during login:", hashed);
+
+    const tx = await contract.login(hashed);
+    console.log("Login transaction sent:", tx.hash);
+
+    const receipt = await tx.wait();
+    console.log("Login receipt:", receipt);
+
+    // Extract and interpret event
+    const loginEvent = receipt.events.find((e) => e.event === "LoginAttempt");
+
+    if (!loginEvent) {
+      alert("Login failed: No event emitted.");
+      return;
+    }
+
+    const success = loginEvent.args.success;
+    console.log("Login success:", success);
+
+    if (success) {
+      alert('Login successful!');
+    } else {
+      alert('Login failed: Incorrect password.');
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    if (error.code === 4001) {
+      alert('Transaction was rejected by the user.');
+    } else {
+      alert('An error occurred during login: ' + error.message);
+    }
+  }
+};
+
 
   return (
     <div

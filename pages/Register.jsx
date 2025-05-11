@@ -76,37 +76,54 @@ const Register = () => {
 
   
   const handleRegister = async () => {
-    try {
-      if (!window.ethereum) {
-        alert('Please install MetaMask to register.');
-        return;
-      }
-      console.log("Password during registration:", password);
+  console.log("Register button clicked");
 
-      const finalPassword = password.trim();
-      const hashed = hashPassword(finalPassword);
-      console.log("Hashed password during registration:", hashed); // Debugging line
-      setHashedPassword(hashed);
-  
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
-  
-      const isRegistered = await contract.isRegistered(account);
-      if (isRegistered) {
-        alert('User is already registered.');
-        return;
-      }
-  
-      const tx = await contract.register(hashed);
-      await tx.wait();
-      alert('User registered successfully!');
-    } catch (error) {
-      console.error('Registration failed:', error);
-      alert('An error occurred during registration.');
+  try {
+    if (!window.ethereum) {
+      alert('Please install MetaMask to register.');
+      return;
     }
-  };
-  
+
+    if (!account) {
+      alert('Please connect your wallet first.');
+      return;
+    }
+
+    const finalPassword = password.trim();
+    const hashed = hashPassword(finalPassword);
+    setHashedPassword(hashed);
+    console.log("Hashed password during registration:", hashed);
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const signerAddress = await signer.getAddress();
+
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+    const isRegistered = await contract.isRegistered(signerAddress);
+    console.log("Is registered:", isRegistered);
+
+    if (isRegistered) {
+      alert('User is already registered.');
+      return;
+    }
+
+    const tx = await contract.register(hashed);
+    console.log("Registration transaction sent:", tx.hash);
+
+    const receipt = await tx.wait();
+    console.log("Registration receipt:", receipt);
+
+    alert('User registered successfully!');
+  } catch (error) {
+    console.error('Registration failed:', error);
+    if (error.code === 4001) {
+      alert('Transaction was rejected by the user.');
+    } else {
+      alert('An error occurred during registration: ' + error.message);
+    }
+  }
+};
+
 
   return (
     <div className="register-container">
