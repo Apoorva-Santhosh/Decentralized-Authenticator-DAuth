@@ -1,48 +1,85 @@
-# Blockchain-Authentication-and-Password-Modification-Application
+# Blockchain Authentication and Password Modification Application
 
-## The main objectives of the project are as follows:
+## Introduction
 
-- Objective 1: Design a decentralized password management system using blockchain to securely store and manage user passwords.
-
-- Objective 2: Implement a secure authentication mechanism using blockchain, ensuring that password hashes are stored and verified in a tamper-proof manner.
-
-- Objective 3: Develop an easy-to-use interface for users to securely register, log in, and manage passwords using blockchain-based authentication.
-
-- Objective 4: Integrate a password analysis module that evaluates password strength, calculates entropy, and estimates password cracking time before storing it securely on the blockchain.
-
-- Objective 5: Integrate a password modification module that automatically enhances weak passwords by applying a series of transformations to improve security before storage.
+This project is a secure, blockchain-based authentication system that analyzes and optionally strengthens user passwords before storing their hashed versions on-chain. It ensures that user credentials are protected using modern cryptography and decentralized infrastructure.
 
 
+## Tech Stack
 
-## To achieve the objectives outlined above, the following methods will be employed:
-
-- Smart Contract Development: Smart contracts will be written in Solidity and deployed on the Ethereum testnet. These contracts will handle password hash storage and verification.
-
-- Password Hashing: Secure hashing algorithms (e.g., SHA-256, bcrypt) will be used to hash passwords before they are stored on the blockchain. The hash will be compared during login to authenticate users.
-
-- Password Analysis: A custom password analysis function will be created using libraries like zxcvbn.js to evaluate password strength. The system will also calculate entropy and estimate the time required for a brute-force attack on the password.
-
-- Password Modification: The system will automatically modify weak passwords by applying random transformations such as using leetspeak, adding capital letters, inserting delimiters, reversing parts of the password, etc. This will be done before hashing and storing the password on the blockchain.
-
-- Dictionary-based Weak Password Check: The system will check the password against a list of known weak or commonly used passwords and suggest stronger alternatives if necessary.
-
-- User Interface: The frontend will be built using React or a similar JavaScript framework, allowing users to interact with the system for registration, login, and password management.
-
-- Blockchain Interaction: Web3.js will be used to connect the frontend with the blockchain, enabling users to interact with the smart contracts on the testnet.
-
-- Testing: The system will be tested on the Ethereum testnet (e.g., Rinkeby or Goerli) to simulate the blockchain interactions without incurring real transaction costs.
+* **Frontend**: React
+* **Smart Contracts**: Solidity
+* **Development Environment**: Hardhat
+* **Blockchain Interaction**: Ethers.js
+* **Password Hashing**: `keccak256` with `toUtf8Bytes` from `ethers/lib/utils`
 
 
-## The expected outcomes of this work include:
+## Key Features
 
-- Secure and Decentralized Authentication: A robust system for password authentication that eliminates the need for centralized storage and ensures that user data is kept secure and private.
+###  User Registration
 
-- Password Strength Analysis: The system will automatically analyze the strength of passwords before storing them on the blockchain. This includes checking for weak passwords, calculating entropy, and estimating password cracking time.
+* Users input a password.
+* The password is analyzed for strength.
+* If weak, a stronger version is suggested (user may copy it).
+* Only the final user-entered password is used.
+* Password is hashed with `keccak256` and stored on the blockchain via a smart contract.
+* Emits a `UserRegistered` event upon success.
 
-- Password Enhancement: Weak passwords will be automatically enhanced using various techniques to increase their strength, reducing the risk of breaches.
+### User Login
 
-- User-Friendly Interface: An intuitive platform for users to register, log in, and manage their passwords in a secure and decentralized manner.
+* Users input their password.
+* Password is hashed and verified against the stored on-chain hash.
+* Emits `LoginSuccessful` or `LoginFailed` event based on validation.
 
-- Scalable Solution: A solution that can be adapted for decentralized applications (dApps) and other platforms that require secure password management.
+### Password Analysis & Strengthening
 
-  
+* Checks password against a dictionary of weak passwords.
+* Uses Levenshtein distance to detect similarity.
+* Suggests stronger passwords using:
+
+  * Leetspeak transformations
+  * Capitalization
+  * Reordering characters
+  * Adding delimiters
+  * Prefixes and suffixes
+
+### Public Ledger Viewer
+
+* Dedicated React component to display blockchain events:
+
+  * User registrations
+  * Login attempts
+* Helps visualize blockchain activity and enhances transparency.
+
+
+## Security Design
+
+* No plaintext passwords stored.
+* Strong cryptographic hashing using `keccak256`.
+* Passwords are only known to users.
+* Blockchain ensures data is decentralized and immutable.
+
+
+## Excluded Components
+
+* **Entropy Calculation**: Removed.
+* **Zero-Knowledge Proofs (ZKP)**: Not implemented.
+* **Docker Containerization**: Deferred.
+
+
+## Future Improvements 
+
+* Integrate Zero-Knowledge Proofs for enhanced privacy.
+* Containerize application using Docker for easier deployment.
+* Expand smart contract to support password change or recovery.
+
+
+## Project Structure
+
+* `components/` – React UI components (e.g., Navbar, Layout, PasswordAnalysis)
+* `pages/` – Login, Register, Home, FAQs, LedgerViewer
+* `utils/` – Hashing logic and password modification helpers
+* `contracts/` – Solidity smart contracts (AuthManager)
+* `artifacts/` – Compiled contract ABIs
+* `vite.config.js` – Project configuration for Vite bundler
+
