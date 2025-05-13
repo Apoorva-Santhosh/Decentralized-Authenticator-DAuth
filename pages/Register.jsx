@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Register.css';
 import { modifyPassword } from '../utils/ModifyPassword.mjs';
 import { hashPassword } from '../utils/hashUtils.js';
-import zxcvbn from 'zxcvbn';
-import levenshtein from 'fast-levenshtein';
-import weakPasswords from '../weak_passwords.json';
+import { analyzePassword } from '../utils/analyzePassword.js';
 import { ethers } from 'ethers';
 import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
 
@@ -17,32 +15,7 @@ const Register = () => {
   const [analysisModified, setAnalysisModified] = useState(null);
   const [copied, setCopied] = useState(false);
   const [account, setAccount] = useState('');
-  const [hashedPassword, setHashedPassword] = useState(''); 
-
-  // Analyze passwords
-  const analyzePassword = (password) => {
-    const result = zxcvbn(password);
-    const scoreText = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
-
-    let closestMatch = '';
-    let minDistance = Infinity;
-
-    for (const weakPass of weakPasswords) {
-      const dist = levenshtein.get(password, weakPass);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestMatch = weakPass;
-      }
-    }
-
-    return {
-      score: result.score,
-      feedback: scoreText[result.score],
-      crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
-      closestWeak: closestMatch,
-      levenshteinDistance: minDistance
-    };
-  };
+  const [hashedPassword, setHashedPassword] = useState('');
 
   useEffect(() => {
     if (password) {
@@ -74,63 +47,68 @@ const Register = () => {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  
   const handleRegister = async () => {
-  console.log("Register button clicked");
+    try {
+      if (!window.ethereum) {
+        alert('Please install MetaMask to register.');
+        return;
+      }
 
-  try {
-    if (!window.ethereum) {
-      alert('Please install MetaMask to register.');
-      return;
+      if (!account) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+
+      const finalPassword = password.trim();
+      const hashed = hashPassword(finalPassword);
+      setHashedPassword(hashed);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const signerAddress = await signer.getAddress();
+
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
+      const isRegistered = await contract.isRegistered(signerAddress);
+
+      if (isRegistered) {
+        alert('User is already registered.');
+        return;
+      }
+
+      const tx = await contract.register(hashed);
+      await tx.wait();
+
+      alert('User registered successfully!');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      if (error.code === 4001) {
+        alert('Transaction was rejected by the user.');
+      } else {
+        alert('An error occurred during registration: ' + error.message);
+      }
     }
+  };
 
-    if (!account) {
-      alert('Please connect your wallet first.');
-      return;
-    }
-
-    const finalPassword = password.trim();
-    const hashed = hashPassword(finalPassword);
-    setHashedPassword(hashed);
-    console.log("Hashed password during registration:", hashed);
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const signerAddress = await signer.getAddress();
-
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
-    const isRegistered = await contract.isRegistered(signerAddress);
-    console.log("Is registered:", isRegistered);
-
-    if (isRegistered) {
-      alert('User is already registered.');
-      return;
-    }
-
-    const tx = await contract.register(hashed);
-    console.log("Registration transaction sent:", tx.hash);
-
-    const receipt = await tx.wait();
-    console.log("Registration receipt:", receipt);
-
-    alert('User registered successfully!');
-  } catch (error) {
-    console.error('Registration failed:', error);
-    if (error.code === 4001) {
-      alert('Transaction was rejected by the user.');
-    } else {
-      alert('An error occurred during registration: ' + error.message);
-    }
-  }
-};
-
+  const renderAnalysis = (title, analysis) => (
+    <div style={{ marginTop: '20px' }}>
+      <h3>{title}</h3>
+      <p><strong>Strength:</strong> {analysis.feedback}</p>
+      <p><strong>Closest Weak Password:</strong> {analysis.closestWeak}</p>
+      <p><strong>Levenshtein Distance:</strong> {analysis.levenshteinDistance}</p>
+      <p><strong>Warning:</strong> {analysis.warning || "None"}</p>
+      <p><strong>Guess Times:</strong></p>
+        <p>100 / hour: {analysis.guessTimes.online_throttling_100_per_hour}</p>
+        <p>10 / second: {analysis.guessTimes.online_no_throttling_10_per_second}</p>
+        <p>10k / second: {analysis.guessTimes.offline_slow_hashing_1e4_per_second}</p>
+        <p>10B / second: {analysis.guessTimes.offline_fast_hashing_1e10_per_second}</p>
+    </div>
+  );
 
   return (
     <div className="register-container">
       <div className="register-box">
         <h2>Register</h2>
 
-        {/* Wallet + Password input */}
         <div className="input-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
           <input
             type="password"
@@ -147,15 +125,7 @@ const Register = () => {
         </div>
 
         {/* Original password analysis */}
-        {analysisOriginal && (
-          <div style={{ marginTop: '20px' }}>
-            <h3>Original Password Analysis</h3>
-            <p><strong>Strength:</strong> {analysisOriginal.feedback}</p>
-            <p><strong>Estimated Crack Time:</strong> {analysisOriginal.crackTime}</p>
-            <p><strong>Closest Weak Password:</strong> {analysisOriginal.closestWeak}</p>
-            <p><strong>Levenshtein Distance:</strong> {analysisOriginal.levenshteinDistance}</p>
-          </div>
-        )}
+        {analysisOriginal && renderAnalysis("Original Password Analysis", analysisOriginal)}
 
         {/* Modified password and its analysis */}
         {modifiedPassword && (
@@ -170,15 +140,7 @@ const Register = () => {
               </button>
             </div>
 
-            {analysisModified && (
-              <div style={{ marginTop: '15px' }}>
-                <h4>Modified Password Analysis</h4>
-                <p><strong>Strength:</strong> {analysisModified.feedback}</p>
-                <p><strong>Estimated Crack Time:</strong> {analysisModified.crackTime}</p>
-                <p><strong>Closest Weak Password:</strong> {analysisModified.closestWeak}</p>
-                <p><strong>Levenshtein Distance:</strong> {analysisModified.levenshteinDistance}</p>
-              </div>
-            )}
+            {analysisModified && renderAnalysis("Modified Password Analysis", analysisModified)}
           </div>
         )}
 

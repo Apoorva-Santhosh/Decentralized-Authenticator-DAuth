@@ -20,7 +20,9 @@ export const analyzePassword = (password) => {
   return {
     score: result.score,
     feedback: scoreText[result.score],
-    crackTime: result.crack_times_display.offline_slow_hashing_1e4_per_second,
+    warning: result.feedback.warning,
+    suggestions: result.feedback.suggestions,
+    guessTimes: result.crack_times_display,
     closestWeak: closestMatch,
     levenshteinDistance: minDistance
   };
