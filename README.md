@@ -45,10 +45,7 @@ This project is a secure, blockchain-based authentication system that analyzes a
 
 ### Public Ledger Viewer
 
-* Dedicated React component to display blockchain events:
-
-  * User registrations
-  * Login attempts
+* Dedicated React component to display login attempts
 * Helps visualize blockchain activity and enhances transparency.
 
 
@@ -60,12 +57,9 @@ This project is a secure, blockchain-based authentication system that analyzes a
 * Blockchain ensures data is decentralized and immutable.
 
 
-## Excluded Components
+## Docker Containerization
 
-* **Entropy Calculation**: Removed.
-* **Zero-Knowledge Proofs (ZKP)**: Not implemented.
-* **Docker Containerization**: Deferred.
-
+*Easy testing and deployment
 
 ## Future Improvements 
 
