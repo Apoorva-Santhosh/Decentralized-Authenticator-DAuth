@@ -9,6 +9,8 @@ const PasswordAnalysis = ({ password, modifiedPassword }) => {
     if (pwdToAnalyze) {
       const result = analyzePassword(pwdToAnalyze);
       setAnalysis(result);
+    } else {
+      setAnalysis(null);
     }
   }, [password, modifiedPassword]);
 
@@ -18,16 +20,14 @@ const PasswordAnalysis = ({ password, modifiedPassword }) => {
       {analysis ? (
         <div>
           <p><strong>Password:</strong> {modifiedPassword || password}</p>
-          <p><strong>Strength:</strong> {analysis.scoreLabel} ({analysis.score} / 4)</p>
-          <p><strong>Guesses (log10):</strong> {analysis.guessesLog10.toFixed(5)}</p>
-          <p><strong>Function Runtime:</strong> {analysis.functionRuntime} ms</p>
+          <p><strong>Strength:</strong> {analysis.feedback} ({analysis.score} / 4)</p>
 
           <h4>Crack Time Estimates:</h4>
           <ul>
-            <li><strong>100/hour (throttled):</strong> {analysis.allCrackTimes.online_throttling_100_per_hour}</li>
-            <li><strong>10/sec (online):</strong> {analysis.allCrackTimes.online_no_throttling_10_per_second}</li>
-            <li><strong>10k/sec (offline, slow hash):</strong> {analysis.allCrackTimes.offline_slow_hashing_1e4_per_second}</li>
-            <li><strong>10B/sec (offline, fast hash):</strong> {analysis.allCrackTimes.offline_fast_hashing_1e10_per_second}</li>
+            <li><strong>100/hour (throttled):</strong> {analysis.guessTimes.online_throttling_100_per_hour}</li>
+            <li><strong>10/sec (online):</strong> {analysis.guessTimes.online_no_throttling_10_per_second}</li>
+            <li><strong>10k/sec (offline, slow hash):</strong> {analysis.guessTimes.offline_slow_hashing_1e4_per_second}</li>
+            <li><strong>10B/sec (offline, fast hash):</strong> {analysis.guessTimes.offline_fast_hashing_1e10_per_second}</li>
           </ul>
 
           <p><strong>Warning:</strong> {analysis.warning}</p>

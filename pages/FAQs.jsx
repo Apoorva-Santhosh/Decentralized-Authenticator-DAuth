@@ -1,59 +1,20 @@
-import React from "react";
-import { Link } from 'react-router-dom';
-import './FAQs.css';  
+import React from 'react';
+import './FAQs.css';
 
 export default function FAQs() {
   const faqs = [
-    {
-      question: "What is the purpose of this application?",
-      answer: "This app helps users analyze and improve their passwords using advanced techniques like dictionary attack detection, and smart password modifications. It then stores only hashed passwords securely on a blockchain."
-    },
-    {
-      question: "How does blockchain increase security?",
-      answer: "Blockchain is decentralized and immutable, meaning once data is written, it cannot be altered. This ensures that password data (stored as hashes) is safe from tampering or unauthorized access—even by insiders."
-    },
-    {
-      question: "Can the website admin see my password?",
-      answer: "No. Your password is hashed using secure algorithms before being stored. Only the hash is saved, and it cannot be reversed to reveal your original password—even by the admin."
-    },
-    {
-      question: "Are the chances of my account getting compromised reduced now?",
-      answer: "Yes. With password strength checks, modification tools, and bockchain-based storage, your account is significantly better protected against brute-force attacks, data leaks, and weak password reuse."
-    },
-    {
-      question: "What does the strength score mean?",
-      answer: "Passwords are scored from 0 to 4 and labeled as: Very Weak, Weak, Fair, Strong, or Very Strong. This score is based on factors like length, unpredictability, and pattern detection."
-    },
-    {
-      question: "What happens when I use the 'Modify Password' feature?",
-      answer: "Your password is enhanced using randomized transformations such as leetspeak substitutions, capitalization, and the insertion of special characters—improving both complexity and unpredictability."
-    },
-    {
-      question: "Are my passwords stored anywhere?",
-      answer: "Only the hashed (encrypted) version of your password is stored on the blockchain. The original password is never saved, transmitted, or accessible, ensuring maximum privacy."
-    },
-    {
-      question: "Can I see how long it would take to crack my password?",
-      answer: "Yes! The password analyzer provides an estimated cracking time using real-world attack models (e.g., offline brute-force attempts), helping you understand your password's resilience."
-    },
-    {
-      question: "What if I use the same password on multiple websites?",
-      answer: "That's risky. Even if your password is strong, using it across services can expose you in case of data breaches elsewhere. This app encourages creating unique, strong passwords for each site to improve security."
-    }
-    ];
-
-  return (
-    
-      <div className="faq-container">
-  <h2>Frequently Asked Questions</h2>
-  {faqs.map((faq, idx) => (
-    <div key={idx} className="faq-item">
-      <h3>{faq.question}</h3>
-      <p>{faq.answer}</p>
-    </div>
-  ))}
-</div>
-
-   
-  );
+    { question: 'What is the purpose of this application?', answer: 'Analyze passwords, suggest stronger alternatives, and log in with a password plus proof of wallet ownership. The public blockchain records wallet registrations without credentials.' },
+    { question: 'Where are passwords stored?', answer: 'The server stores a uniquely salted Argon2id verifier in a private credential store. Passwords and their verifiers are never stored on the blockchain.' },
+    { question: 'Does the server receive my password?', answer: 'Analysis and suggestions run in your browser. Registering or logging in sends the selected password to the authentication server for hashing or verification. A public installation must use HTTPS. Plaintext passwords are not saved or logged.' },
+    { question: 'What does the blockchain protect?', answer: 'It provides a public record of wallet registrations. Password verification, sessions, and private login history are managed by the server. Blockchain storage does not make passwords secret.' },
+    { question: 'How do I choose a password?', answer: 'Use a unique password or passphrase with 15 to 128 characters. Spaces and Unicode are accepted. Common passwords are blocked. There is no mandatory mix of uppercase letters, numbers, or symbols.' },
+    { question: 'What does the strength score mean?', answer: 'Scores run from 0 (Very Weak) to 4 (Very Strong). These and the cracking-time estimates are estimates, not guarantees. The analyzer looks for patterns as well as length.' },
+    { question: 'How do suggestions work?', answer: 'Suggestions transform your input and add a cryptographically random suffix. A suggestion is shown only if it fits the length limits and has a higher estimated strength score. Only the password you actually enter is registered.' },
+    { question: 'Why does MetaMask ask for a signature?', answer: 'The server requests a short-lived, one-time signature to verify that you control the wallet. You must also supply the correct password. Signing in does not send a blockchain transaction or require gas.' },
+    { question: 'Who can see my login history?', answer: 'The server checks your authenticated session before returning your own recent login history. Public wallet registration events are shown separately.' },
+    { question: 'Can I reuse my password?', answer: 'Use a different password for every service. Strength analysis cannot protect a password that is leaked or reused elsewhere.' },
+  ];
+  return <div className="faq-container"><h2>Frequently Asked Questions</h2>{faqs.map((faq) => (
+    <div key={faq.question} className="faq-item"><h3>{faq.question}</h3><p>{faq.answer}</p></div>
+  ))}</div>;
 }

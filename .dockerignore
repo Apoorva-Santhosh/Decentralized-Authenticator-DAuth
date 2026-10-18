@@ -4,3 +4,8 @@ Dockerfile
 .dockerignore
 .git
 .gitignore
+
+.auth-data
+.env
+.env.*
+Revision.txt

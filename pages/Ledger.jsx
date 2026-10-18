@@ -1,72 +1,104 @@
 import React, { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
-import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
-import '../pages/Ledger.css'; 
-
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+import { Link } from 'react-router-dom';
+import { getAuthContract } from '../utils/wallet.js';
+import { api } from '../utils/authApi.js';
+import { useAuth } from '../components/AuthContext.jsx';
+import '../pages/Ledger.css';
 
 const Ledger = () => {
+  const { session, loading: sessionLoading } = useAuth();
   const [events, setEvents] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
+  const [error, setError] = useState('');
+  const [chainError, setChainError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const wallet = window.ethereum;
+    const refresh = () => setRevision((value) => value + 1);
+    wallet?.on('chainChanged', refresh);
+    wallet?.on('disconnect', refresh);
+    return () => {
+      wallet?.removeListener('chainChanged', refresh);
+      wallet?.removeListener('disconnect', refresh);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setEvents([]);
+    setError('');
+    if (!session) return;
+    api('/api/auth/history').then((result) => {
+      if (!cancelled) setEvents(result.events);
+    }).catch((err) => {
+      if (!cancelled) setError(err.message);
+    });
+    return () => { cancelled = true; };
+  }, [session, revision]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRegistrations = async () => {
+      setLoading(true);
+      setChainError('');
+      setRegistrations([]);
       try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, provider);
-
-        const filter = contract.filters.LoginAttempt();
-        const logs = await contract.queryFilter(filter, 0, "latest");
-
-        const parsed = await Promise.all(
-          logs.map(async (log) => {
-            const block = await provider.getBlock(log.blockNumber);
-            return {
-              user: log.args.user,
-              success: log.args.success,
-              timestamp: new Date(block.timestamp * 1000).toLocaleString(),
-              blockNumber: log.blockNumber,
-              txHash: log.transactionHash,
-            };
-          })
-        );
-
-        setEvents(parsed);
+        const { provider, contract } = await getAuthContract();
+        const latest = await provider.getBlockNumber();
+        const parsed = [];
+        const blocks = new Map();
+        for (let from = 0; from <= latest; from += 1000) {
+          if (cancelled) return;
+          const logs = await contract.queryFilter(contract.filters.UserRegistered(), from, Math.min(from + 999, latest));
+          for (const log of logs) {
+            if (cancelled) return;
+            if (!blocks.has(log.blockNumber)) blocks.set(log.blockNumber, await provider.getBlock(log.blockNumber));
+            const block = blocks.get(log.blockNumber);
+            if (!block) throw new Error('A ledger block is unavailable. Please refresh.');
+            parsed.push({ user: log.args.user, timestamp: new Date(block.timestamp * 1000).toLocaleString(), txHash: log.transactionHash, logIndex: log.logIndex });
+          }
+        }
+        if (!cancelled) setRegistrations(parsed);
       } catch (err) {
-        console.error("Error fetching events:", err);
+        if (!cancelled) setChainError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchEvents();
-  }, []);
+    fetchRegistrations();
+    return () => { cancelled = true; };
+  }, [revision]);
 
   return (
     <div className="ledger-container">
-      <h2 className="ledger-heading">Login Ledger</h2>
+      <h2 className="ledger-heading">Your Login History</h2>
+      <button onClick={() => setRevision((value) => value + 1)}>Refresh</button>
+      {sessionLoading ? <p role="status">Checking your session...</p> : !session ? <p><Link to="/login">Log in</Link> to view your private login history.</p> : (
+        <>
+          <p>Signed in as {session.address}</p>
+          {error && <p role="alert">{error}</p>}
+          <table className="ledger-table">
+            <thead><tr><th>Result</th><th>Timestamp</th></tr></thead>
+            <tbody>{events.map((event, index) => (
+              <tr key={`${event.timestamp}-${index}`}>
+                <td className={event.success ? 'success' : 'fail'}>{event.success ? 'Success' : 'Fail'}</td>
+                <td>{new Date(event.timestamp).toLocaleString()}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        </>
+      )}
+      <h2 className="ledger-heading">Public Wallet Registrations</h2>
+      {loading && <p role="status">Loading wallet registrations...</p>}
+      {chainError && <p role="alert">{chainError}</p>}
+      {!loading && !chainError && registrations.length === 0 && <p>No wallet registrations recorded.</p>}
       <table className="ledger-table">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Success</th>
-            <th>Timestamp</th>
-            <th>Tx</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map((e, i) => (
-            <tr key={i}>
-              <td>{e.user}</td>
-              <td className={e.success ? 'success' : 'fail'}>
-                {e.success ? "Success" : "Fail"}
-              </td>
-              <td>{e.timestamp}</td>
-              <td>
-                <a href={`https://sepolia.etherscan.io/tx/${e.txHash}`} target="_blank" rel="noreferrer">
-                  View
-                </a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+        <thead><tr><th>Wallet</th><th>Timestamp</th><th>Transaction</th></tr></thead>
+        <tbody>{registrations.map((event) => (
+          <tr key={`${event.txHash}-${event.logIndex}`}><td>{event.user}</td><td>{event.timestamp}</td><td>{event.txHash}</td></tr>
+        ))}</tbody>
       </table>
     </div>
   );

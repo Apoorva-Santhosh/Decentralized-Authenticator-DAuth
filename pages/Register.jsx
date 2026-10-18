@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Register.css';
 import { modifyPassword } from '../utils/ModifyPassword.mjs';
-import { hashPassword } from '../utils/hashUtils.js';
+import { authenticate } from '../utils/authApi.js';
+import { passwordError } from '../utils/passwordPolicy.js';
+import { useAuth } from '../components/AuthContext.jsx';
 import { analyzePassword } from '../utils/analyzePassword.js';
-import { ethers } from 'ethers';
-import AuthManagerABI from '../artifacts/contracts/AuthManager.sol/AuthManager.json';
-
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+import { getAuthContract } from '../utils/wallet.js';
+import { useWallet } from '../utils/useWallet.js';
 
 const Register = () => {
   const [password, setPassword] = useState('');
@@ -14,78 +14,83 @@ const Register = () => {
   const [analysisOriginal, setAnalysisOriginal] = useState(null);
   const [analysisModified, setAnalysisModified] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [account, setAccount] = useState('');
-  const [hashedPassword, setHashedPassword] = useState('');
+  const { account, connectWallet } = useWallet();
+  const [pending, setPending] = useState(false);
+  const submitting = useRef(false);
+  const copyTimer = useRef();
+  const passwordVersion = useRef(0);
+  const [registeredAccount, setRegisteredAccount] = useState('');
+  const { session } = useAuth();
 
   useEffect(() => {
-    if (password) {
+    setAnalysisOriginal(null);
+    setModifiedPassword('');
+    setAnalysisModified(null);
+    setCopied(false);
+    clearTimeout(copyTimer.current);
+    // Avoid running dictionary searches and suggestion generation on every keystroke.
+    const timer = setTimeout(() => {
+      if (passwordError(password)) return;
       setAnalysisOriginal(analyzePassword(password));
       const modified = modifyPassword(password);
       setModifiedPassword(modified);
-      setAnalysisModified(analyzePassword(modified));
-    } else {
-      setAnalysisOriginal(null);
-      setModifiedPassword('');
-      setAnalysisModified(null);
-    }
+      setAnalysisModified(modified ? analyzePassword(modified) : null);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [password]);
 
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) return alert("Please install MetaMask.");
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      setAccount(accounts[0]);
-    } catch (err) {
-      console.error('Wallet connection error:', err);
-      alert('Failed to connect wallet.');
-    }
-  };
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(modifiedPassword);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  const handleCopy = async () => {
+    const version = passwordVersion.current;
+    try {
+      await navigator.clipboard.writeText(modifiedPassword);
+      if (version !== passwordVersion.current) return;
+      setCopied(true);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(false), 1500);
+    } catch {
+      alert('Could not copy the password. Please copy it manually.');
+    }
   };
 
   const handleRegister = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setPending(true);
     try {
-      if (!window.ethereum) {
-        alert('Please install MetaMask to register.');
-        return;
-      }
-
-      if (!account) {
-        alert('Please connect your wallet first.');
-        return;
-      }
-
-      const finalPassword = password.trim();
-      const hashed = hashPassword(finalPassword);
-      setHashedPassword(hashed);
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      const signerAddress = await signer.getAddress();
-
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, AuthManagerABI.abi, signer);
-      const isRegistered = await contract.isRegistered(signerAddress);
-
-      if (isRegistered) {
-        alert('User is already registered.');
-        return;
-      }
-
-      const tx = await contract.register(hashed);
-      await tx.wait();
-
-      alert('User registered successfully!');
+      if (!account) throw new Error('Please connect your wallet first.');
+      await authenticate('register', account, password);
+      setRegisteredAccount(account.toLowerCase());
+      setPassword('');
+      alert('Account registered. You can now log in with your password and wallet.');
     } catch (error) {
-      console.error('Registration failed:', error);
-      if (error.code === 4001) {
-        alert('Transaction was rejected by the user.');
-      } else {
-        alert('An error occurred during registration: ' + error.message);
-      }
+      alert(error.code === 4001 || error.code === 'ACTION_REJECTED'
+        ? 'Wallet signature was rejected by the user.'
+        : 'An error occurred during registration: ' + error.message);
+    } finally {
+      submitting.current = false;
+      setPending(false);
+    }
+  };
+
+  const recordRegistration = async () => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setPending(true);
+    try {
+      const { contract } = await getAuthContract(true);
+      const signerAddress = await contract.signer.getAddress();
+      if (signerAddress.toLowerCase() !== account.toLowerCase()) throw new Error('Your wallet account changed.');
+      if (await contract.isRegistered(signerAddress)) throw new Error('Wallet registration is already recorded.');
+      // The contract receives no password, password hash, or session credential.
+      await (await contract.register()).wait();
+      alert('Wallet registration recorded on the blockchain.');
+    } catch (error) {
+      alert(error.code === 4001 || error.code === 'ACTION_REJECTED' ? 'Transaction rejected.' : error.message);
+    } finally {
+      submitting.current = false;
+      setPending(false);
     }
   };
 
@@ -112,17 +117,22 @@ const Register = () => {
         <div className="input-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
           <input
             type="password"
+            autoComplete="new-password"
             placeholder="Enter Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { passwordVersion.current++; setPassword(e.target.value); }}
+            disabled={pending}
             style={{ padding: '8px', width: '300px' }}
           />
           {!account ? (
-            <button className="connect-btn" onClick={connectWallet}>Connect Wallet</button>
+            <button className="connect-btn" onClick={connectWallet} disabled={pending}>Connect Wallet</button>
           ) : (
             <p style={{ fontWeight: 'bold' }}>Connected: {account}</p>
           )}
         </div>
+
+        <p>Use 15 to 128 characters. Spaces and Unicode are welcome.</p>
+        {password && passwordError(password, true) && <p role="status">{passwordError(password, true)}</p>}
 
         {/* Original password analysis */}
         {analysisOriginal && renderAnalysis("Original Password Analysis", analysisOriginal)}
@@ -144,8 +154,8 @@ const Register = () => {
           </div>
         )}
 
-        <button onClick={handleRegister} style={{ marginTop: '30px', padding: '10px 20px' }}>
-          Register
+        <button onClick={handleRegister} disabled={pending} style={{ marginTop: '30px', padding: '10px 20px' }}>
+          {pending ? 'Please wait...' : 'Register'}
         </button>
       </div>
     </div>

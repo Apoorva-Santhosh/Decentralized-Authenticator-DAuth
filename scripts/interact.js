@@ -1,43 +1,17 @@
-const { ethers } = require("hardhat");
+import hre from 'hardhat';
+const { ethers } = hre;
 
 async function interact() {
   const [user] = await ethers.getSigners();
-  console.log("Interacting with contract using account:", user.address);
-
-  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; 
-
-  const authManager = await ethers.getContractAt("AuthManager", contractAddress);
-
-  // Check if user is already registered
-  const isRegistered = await authManager.isRegistered(user.address);
-  console.log("Is Registered:", isRegistered);
-
-  /*
-  // Uncomment below lines only if you want to test registration from script
-  if (!isRegistered) {
-    const password = "my_secure_password"; 
-    const passwordHash = ethers.keccak256(ethers.toUtf8Bytes(password));
-    console.log("Password Hash:", passwordHash);
-
-    const tx = await authManager.register(passwordHash);
-    await tx.wait();
-    console.log("User registered successfully!");
-  } else {
-    console.log("User already registered.");
-  }
-
-  // Uncomment to test login from script
-  const passwordToLogin = "my_secure_password"; 
-  const passwordHashToLogin = ethers.keccak256(ethers.toUtf8Bytes(passwordToLogin));
-  
-  const loginSuccess = await authManager.login(passwordHashToLogin);
-  console.log("Login Success?", loginSuccess);
-  */
+  const address = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+  const registry = await ethers.getContractAt('AuthManager', address);
+  console.log('Interacting with wallet registry using account:', user.address);
+  console.log('Is registered:', await registry.isRegistered(user.address));
+  // To record this wallet, use: await (await registry.register()).wait();
+  // Password registration/login belongs to /api/auth, never to a transaction.
 }
 
-interact()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+interact().then(() => process.exit(0)).catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
